@@ -13,19 +13,19 @@ export function Stats({ deployments, filteredDeployments }: StatsProps) {
   return (
     <div className="stats">
       <div className="stat-card">
-        <h4>Deployment Visualizzati</h4>
+        <h4>Displayed Deployments</h4>
         <p className="stat-value">{filteredDeployments.length}</p>
       </div>
       <div className="stat-card">
-        <h4>Totale Progetti</h4>
+        <h4>Total Projects</h4>
         <p className="stat-value">{totalProjects}</p>
       </div>
       <div className="stat-card">
-        <h4>Totale Environment</h4>
+        <h4>Total Environments</h4>
         <p className="stat-value">{totalEnvironments}</p>
       </div>
       <div className="stat-card">
-        <h4>Totale Tenant</h4>
+        <h4>Total Tenants</h4>
         <p className="stat-value">{totalTenants}</p>
       </div>
     </div>

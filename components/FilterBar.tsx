@@ -60,16 +60,16 @@ export function FilterBar({ deployments, onFilterChange }: FilterBarProps) {
 
   return (
     <div className="filters">
-      <h3>Filtri</h3>
+      <h3>Filters</h3>
       <div className="filter-group">
         <div className="filter-field">
-          <label htmlFor="project-filter">Progetto</label>
+          <label htmlFor="project-filter">Project</label>
           <select
             id="project-filter"
             value={projectFilter}
             onChange={e => setProjectFilter(e.target.value)}
           >
-            <option value="">Tutti i progetti</option>
+            <option value="">All projects</option>
             {uniqueProjects.map(project => (
               <option key={project} value={project}>
                 {project}
@@ -85,7 +85,7 @@ export function FilterBar({ deployments, onFilterChange }: FilterBarProps) {
             value={environmentFilter}
             onChange={e => setEnvironmentFilter(e.target.value)}
           >
-            <option value="">Tutti gli environment</option>
+            <option value="">All environments</option>
             {uniqueEnvironments.map(env => (
               <option key={env} value={env}>
                 {env}
@@ -101,7 +101,7 @@ export function FilterBar({ deployments, onFilterChange }: FilterBarProps) {
             value={tenantFilter}
             onChange={e => setTenantFilter(e.target.value)}
           >
-            <option value="">Tutti i tenant</option>
+            <option value="">All tenants</option>
             {uniqueTenants.map(tenant => (
               <option key={tenant} value={tenant}>
                 {tenant}
@@ -111,11 +111,11 @@ export function FilterBar({ deployments, onFilterChange }: FilterBarProps) {
         </div>
 
         <div className="filter-field">
-          <label htmlFor="search-text">Ricerca</label>
+          <label htmlFor="search-text">Search</label>
           <input
             id="search-text"
             type="text"
-            placeholder="Cerca..."
+            placeholder="Search..."
             value={searchText}
             onChange={e => setSearchText(e.target.value)}
           />

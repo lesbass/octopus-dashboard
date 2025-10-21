@@ -18,14 +18,14 @@ export default function Dashboard() {
   const { data: deployments = [], isLoading, error, refetch, isRefetching } = useQuery({
     queryKey: ['deployments'],
     queryFn: () => octopusService.getDeploymentInfo(),
-    refetchInterval: 60000, // Refresh ogni minuto
+    refetchInterval: 60000, // Refresh every minute
     refetchOnWindowFocus: true,
   });
 
   if (isLoading) {
     return (
       <div className="app">
-        <div className="loading">Caricamento dei deployment...</div>
+        <div className="loading">Loading deployments...</div>
       </div>
     );
   }
@@ -34,16 +34,16 @@ export default function Dashboard() {
     return (
       <div className="app">
         <div className="error">
-          <h3>❌ Errore di Connessione</h3>
+          <h3>❌ Connection Error</h3>
           <p>
-            Impossibile connettersi a Octopus Deploy. 
-            Verifica la configurazione e la connettività.
+            Unable to connect to Octopus Deploy. 
+            Please check your configuration and connectivity.
           </p>
           <p style={{ marginTop: '10px', fontSize: '13px' }}>
-            <strong>Dettagli:</strong> {(error as Error).message}
+            <strong>Details:</strong> {(error as Error).message}
           </p>
           <button className="refresh-button" onClick={() => refetch()}>
-            Riprova
+            Retry
           </button>
         </div>
       </div>
@@ -54,7 +54,7 @@ export default function Dashboard() {
     <div className="app">
       <header className="header">
         <h1>🐙 Octopus Deploy Dashboard</h1>
-        <p>Visualizza le versioni deployate per progetto, environment e tenant</p>
+        <p>View deployed versions by project, environment and tenant</p>
       </header>
 
       <Stats deployments={deployments} filteredDeployments={filteredDeployments} />
@@ -70,7 +70,7 @@ export default function Dashboard() {
           onClick={() => refetch()}
           disabled={isRefetching}
         >
-          {isRefetching ? '🔄 Aggiornamento...' : '🔄 Aggiorna Dati'}
+          {isRefetching ? '🔄 Refreshing...' : '🔄 Refresh Data'}
         </button>
       </div>
 

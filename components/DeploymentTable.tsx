@@ -18,7 +18,7 @@ export function DeploymentTable({ deployments }: DeploymentTableProps) {
     return (
       <div className="table-container">
         <div className="no-data">
-          Nessun deployment trovato con i filtri selezionati.
+          No deployments found with the selected filters.
         </div>
       </div>
     );
@@ -29,11 +29,11 @@ export function DeploymentTable({ deployments }: DeploymentTableProps) {
       <table className="deployments-table">
         <thead>
           <tr>
-            <th>Progetto</th>
+            <th>Project</th>
             <th>Environment</th>
             <th>Tenant</th>
-            <th>Versione</th>
-            <th>Data Deploy</th>
+            <th>Version</th>
+            <th>Deploy Date</th>
           </tr>
         </thead>
         <tbody>
