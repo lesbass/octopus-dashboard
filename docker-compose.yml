@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  octopus-dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: octopus-dashboard
+    ports:
+      - "3000:3000"
+    environment:
+      - OCTOPUS_SERVER_URL=${OCTOPUS_SERVER_URL:-https://your-octopus-server.com}
+      - OCTOPUS_API_KEY=${OCTOPUS_API_KEY:-API-XXXXXXXXXXXXXXXXXXXXXXXXXX}
+      - OCTOPUS_SPACE_ID=${OCTOPUS_SPACE_ID:-Spaces-1}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
