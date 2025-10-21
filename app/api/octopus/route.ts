@@ -31,14 +31,6 @@ export async function GET(request: NextRequest) {
 
     const url = `${octopusConfig.serverUrl}${endpoint}`;
     
-    console.log('=== Octopus API Debug ===');
-    console.log('Server URL:', octopusConfig.serverUrl);
-    console.log('Space ID:', octopusConfig.spaceId);
-    console.log('Original endpoint:', searchParams.get('endpoint'));
-    console.log('Modified endpoint:', endpoint);
-    console.log('Final URL:', url);
-    console.log('========================');
-    
     // Rimuove 'endpoint' dai parametri prima di inoltrarli
     const params = Object.fromEntries(searchParams.entries());
     delete params.endpoint;
