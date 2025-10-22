@@ -62,3 +62,10 @@ export interface DashboardResponse {
   Environments: Environment[];
   Tenants: Tenant[];
 }
+
+export interface CompleteDeploymentData {
+  deployments: DeploymentInfo[];
+  allProjects: Project[];
+  allEnvironments: Environment[];
+  allTenants: Tenant[];
+}

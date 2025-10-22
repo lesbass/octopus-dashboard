@@ -1,26 +1,60 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useQuery } from '@tanstack/react-query';
 import { OctopusService } from '@/lib/services/octopusService';
 import OctopusClient from '@/lib/services/octopusClient';
 import { FilterBar } from '@/components/FilterBar';
 import { DeploymentTable } from '@/components/DeploymentTable';
 import { Stats } from '@/components/Stats';
-import type { DeploymentInfo } from '@/lib/types/octopus';
+import type { DeploymentInfo, Project, Environment, Tenant } from '@/lib/types/octopus';
+
+// Dynamically import 3D view to avoid SSR issues with Three.js
+const Deployment3DView = dynamic(
+  () => import('@/components/Deployment3DView'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="view-3d-container">
+        <div className="loading">Loading 3D visualization...</div>
+      </div>
+    )
+  }
+);
 
 const octopusClient = new OctopusClient();
 const octopusService = new OctopusService(octopusClient);
 
+type ViewMode = 'table' | '3d';
+
 export default function Dashboard() {
   const [filteredDeployments, setFilteredDeployments] = useState<DeploymentInfo[]>([]);
+  const [viewMode, setViewMode] = useState<ViewMode>('table');
 
-  const { data: deployments = [], isLoading, error, refetch, isRefetching } = useQuery({
+  const { data, isLoading, error, refetch, isRefetching } = useQuery({
     queryKey: ['deployments'],
-    queryFn: () => octopusService.getDeploymentInfo(),
+    queryFn: () => octopusService.getCompleteDeploymentData(),
     refetchInterval: 60000, // Refresh every minute
     refetchOnWindowFocus: true,
   });
+
+  const deployments = data?.deployments || [];
+  const allProjects = data?.allProjects || [];
+  const allEnvironments = data?.allEnvironments || [];
+  const allTenants = data?.allTenants || [];
+
+  // Check if any filters are active
+  const hasActiveFilters = filteredDeployments.length !== deployments.length;
+
+  // Auto-switch to table view when filters are applied
+  const handleFilterChange = (filtered: DeploymentInfo[]) => {
+    setFilteredDeployments(filtered);
+    // If filters are active and user is on 3D view, switch to table view
+    if (filtered.length !== deployments.length && viewMode === '3d') {
+      setViewMode('table');
+    }
+  };
 
   if (isLoading) {
     return (
@@ -61,10 +95,26 @@ export default function Dashboard() {
 
       <FilterBar
         deployments={deployments}
-        onFilterChange={setFilteredDeployments}
+        onFilterChange={handleFilterChange}
       />
 
-      <div style={{ marginBottom: '15px', display: 'flex', justifyContent: 'flex-end' }}>
+      <div style={{ marginBottom: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="view-toggle">
+          <button 
+            className={`toggle-button ${viewMode === 'table' ? 'active' : ''}`}
+            onClick={() => setViewMode('table')}
+          >
+            📊 Table View
+          </button>
+          <button 
+            className={`toggle-button ${viewMode === '3d' ? 'active' : ''}`}
+            onClick={() => setViewMode('3d')}
+            disabled={hasActiveFilters}
+            title={hasActiveFilters ? '3D view is disabled when filters are active' : ''}
+          >
+            🎲 3D View
+          </button>
+        </div>
         <button 
           className="refresh-button" 
           onClick={() => refetch()}
@@ -74,7 +124,16 @@ export default function Dashboard() {
         </button>
       </div>
 
-      <DeploymentTable deployments={filteredDeployments} />
+      {viewMode === 'table' ? (
+        <DeploymentTable deployments={filteredDeployments} />
+      ) : (
+        <Deployment3DView 
+          deployments={filteredDeployments} 
+          allProjects={allProjects}
+          allEnvironments={allEnvironments}
+          allTenants={allTenants}
+        />
+      )}
     </div>
   );
 }

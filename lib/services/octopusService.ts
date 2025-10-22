@@ -5,6 +5,7 @@ import type {
   Tenant,
   DashboardResponse,
   DeploymentInfo,
+  CompleteDeploymentData,
 } from '../types/octopus';
 
 interface PaginatedResponse<T> {
@@ -61,18 +62,52 @@ export class OctopusService {
     const tenantMap = new Map(dashboard.Tenants.map(t => [t.Id, t.Name]));
 
     const deployments: DeploymentInfo[] = dashboard.Items
-      .filter(item => item.State === 'Success')
+      .filter(item => item.State === 'Success' && item.TenantId)
       .map(item => ({
         projectName: projectMap.get(item.ProjectId) || 'Unknown',
         projectId: item.ProjectId,
         environmentName: environmentMap.get(item.EnvironmentId) || 'Unknown',
         environmentId: item.EnvironmentId,
-        tenantName: item.TenantId ? (tenantMap.get(item.TenantId) || 'Unknown') : 'Untenanted',
-        tenantId: item.TenantId || '',
+        tenantName: tenantMap.get(item.TenantId!) || 'Unknown',
+        tenantId: item.TenantId!,
         version: item.ReleaseVersion,
         deployedAt: item.CompletedTime || '',
       }));
 
     return deployments;
+  }
+
+  async getCompleteDeploymentData(): Promise<CompleteDeploymentData> {
+    // Fetch all data in parallel
+    const [dashboard, allProjects, allEnvironments, allTenants] = await Promise.all([
+      this.getDashboard(),
+      this.getProjects(),
+      this.getEnvironments(),
+      this.getTenants()
+    ]);
+    
+    const projectMap = new Map(dashboard.Projects.map(p => [p.Id, p.Name]));
+    const environmentMap = new Map(dashboard.Environments.map(e => [e.Id, e.Name]));
+    const tenantMap = new Map(dashboard.Tenants.map(t => [t.Id, t.Name]));
+
+    const deployments: DeploymentInfo[] = dashboard.Items
+      .filter(item => item.State === 'Success' && item.TenantId)
+      .map(item => ({
+        projectName: projectMap.get(item.ProjectId) || 'Unknown',
+        projectId: item.ProjectId,
+        environmentName: environmentMap.get(item.EnvironmentId) || 'Unknown',
+        environmentId: item.EnvironmentId,
+        tenantName: tenantMap.get(item.TenantId!) || 'Unknown',
+        tenantId: item.TenantId!,
+        version: item.ReleaseVersion,
+        deployedAt: item.CompletedTime || '',
+      }));
+
+    return {
+      deployments,
+      allProjects,
+      allEnvironments,
+      allTenants
+    };
   }
 }

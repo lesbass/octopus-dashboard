@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type { DeploymentInfo } from '@/lib/types/octopus';
 
 interface FilterBarProps {
@@ -29,7 +29,7 @@ export function FilterBar({ deployments, onFilterChange }: FilterBarProps) {
     [deployments]
   );
 
-  useMemo(() => {
+  const filteredDeployments = useMemo(() => {
     let filtered = deployments;
 
     if (projectFilter) {
@@ -55,8 +55,13 @@ export function FilterBar({ deployments, onFilterChange }: FilterBarProps) {
       );
     }
 
-    onFilterChange(filtered);
-  }, [projectFilter, environmentFilter, tenantFilter, searchText, deployments, onFilterChange]);
+    return filtered;
+  }, [projectFilter, environmentFilter, tenantFilter, searchText, deployments]);
+
+  // Call onFilterChange when filtered results change
+  useEffect(() => {
+    onFilterChange(filteredDeployments);
+  }, [filteredDeployments, onFilterChange]);
 
   return (
     <div className="filters">
