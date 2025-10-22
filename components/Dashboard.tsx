@@ -8,6 +8,7 @@ import OctopusClient from '@/lib/services/octopusClient';
 import { FilterBar } from '@/components/FilterBar';
 import { DeploymentTable } from '@/components/DeploymentTable';
 import { Stats } from '@/components/Stats';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import type { DeploymentInfo, Project, Environment, Tenant } from '@/lib/types/octopus';
 
 // Dynamically import 3D view to avoid SSR issues with Three.js
@@ -83,12 +84,16 @@ export default function Dashboard() {
       </div>
     );
   }
-
   return (
     <div className="app">
       <header className="header">
-        <h1>🐙 Octopus Deploy Dashboard</h1>
-        <p>View deployed versions by project, environment and tenant</p>
+        <div className="header-content">
+          <div>
+            <h1>🐙 Octopus Deploy Dashboard</h1>
+            <p>View deployed versions by project, environment and tenant</p>
+          </div>
+          <ThemeToggle />
+        </div>
       </header>
 
       <Stats deployments={deployments} filteredDeployments={filteredDeployments} />

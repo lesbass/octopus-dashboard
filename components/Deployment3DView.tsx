@@ -4,6 +4,7 @@ import { useRef, useMemo, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Text, Line, Html } from '@react-three/drei';
 import * as THREE from 'three';
+import { useTheme } from './ThemeProvider';
 import type { DeploymentInfo, Project, Environment, Tenant } from '@/lib/types/octopus';
 
 interface Deployment3DViewProps {
@@ -32,11 +33,13 @@ interface DeploymentNode {
 function DeploymentNode({ 
   position, 
   deployment, 
-  onHover 
+  onHover,
+  isDark
 }: { 
   position: [number, number, number]; 
   deployment: DeploymentInfo | null;
   onHover: (deployment: DeploymentInfo | null) => void;
+  isDark: boolean;
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = useState(false);
@@ -49,6 +52,12 @@ function DeploymentNode({
   });
 
   const hasDeployment = deployment !== null;
+  const textColor = isDark ? '#e6e6e6' : '#000000';
+  const tooltipBg = isDark ? 'rgba(26, 31, 46, 0.95)' : 'rgba(0, 0, 0, 0.9)';
+  const emptyTooltipBg = isDark ? 'rgba(42, 50, 68, 0.95)' : 'rgba(128, 128, 128, 0.9)';
+  
+  // Safely get version, handle empty or invalid versions
+  const versionText = hasDeployment && deployment.version ? deployment.version : 'N/A';
 
   return (
     <group position={position}>
@@ -57,7 +66,7 @@ function DeploymentNode({
         <>
           <Text
             fontSize={0.15}
-            color="#000000"
+            color={textColor}
             anchorX="center"
             anchorY="middle"
             fontWeight="bold"
@@ -70,12 +79,12 @@ function DeploymentNode({
               onHover(null);
             }}
           >
-            {deployment.version}
+            {versionText}
           </Text>
           {hovered && (
             <Html distanceFactor={10}>
               <div style={{
-                background: 'rgba(0, 0, 0, 0.9)',
+                background: tooltipBg,
                 color: 'white',
                 padding: '10px',
                 borderRadius: '4px',
@@ -87,7 +96,7 @@ function DeploymentNode({
                 <div><strong>Project:</strong> {deployment.projectName}</div>
                 <div><strong>Environment:</strong> {deployment.environmentName}</div>
                 <div><strong>Tenant:</strong> {deployment.tenantName}</div>
-                <div><strong>Version:</strong> {deployment.version}</div>
+                <div><strong>Version:</strong> {versionText}</div>
                 <div style={{ fontSize: '10px', marginTop: '5px', color: '#aaa' }}>
                   {new Date(deployment.deployedAt).toLocaleString()}
                 </div>
@@ -121,7 +130,7 @@ function DeploymentNode({
           {hovered && (
             <Html distanceFactor={10}>
               <div style={{
-                background: 'rgba(128, 128, 128, 0.9)',
+                background: emptyTooltipBg,
                 color: 'white',
                 padding: '8px',
                 borderRadius: '4px',
@@ -160,12 +169,14 @@ function Scene({
   deployments, 
   allProjects, 
   allEnvironments, 
-  allTenants 
+  allTenants,
+  isDark
 }: { 
   deployments: DeploymentInfo[];
   allProjects: Project[];
   allEnvironments: Environment[];
   allTenants: Tenant[];
+  isDark: boolean;
 }) {
   const [hoveredDeployment, setHoveredDeployment] = useState<DeploymentInfo | null>(null);
 
@@ -389,6 +400,7 @@ function Scene({
           position={node.position}
           deployment={node.deployment}
           onHover={setHoveredDeployment}
+          isDark={isDark}
         />
       ))}
 
@@ -401,7 +413,7 @@ function Scene({
       <Text
         position={[0, -(environments.length - 1) * spacing / 2 - 1.5, -(tenants.length - 1) * spacing / 2 - 1.5]}
         fontSize={0.3}
-        color="#1565C0"
+        color={isDark ? '#64b5f6' : '#1565C0'}
         anchorX="center"
         fontWeight="bold"
       >
@@ -410,7 +422,7 @@ function Scene({
       <Text
         position={[-(projects.length - 1) * spacing / 2 - 1.5, 0, -(tenants.length - 1) * spacing / 2 - 1.5]}
         fontSize={0.3}
-        color="#2E7D32"
+        color={isDark ? '#81c784' : '#2E7D32'}
         anchorX="center"
         fontWeight="bold"
       >
@@ -419,7 +431,7 @@ function Scene({
       <Text
         position={[-(projects.length - 1) * spacing / 2 - 1.5, -(environments.length - 1) * spacing / 2 - 1.5, 0]}
         fontSize={0.3}
-        color="#E65100"
+        color={isDark ? '#ffb74d' : '#E65100'}
         anchorX="center"
         fontWeight="bold"
       >
@@ -437,6 +449,9 @@ function Scene({
 }
 
 export default function Deployment3DView({ deployments, allProjects, allEnvironments, allTenants }: Deployment3DViewProps) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  
   // Check if we have the necessary data to render
   if (!allProjects || !allEnvironments || !allTenants || 
       allProjects.length === 0 || allEnvironments.length === 0 || allTenants.length === 0) {
@@ -449,30 +464,21 @@ export default function Deployment3DView({ deployments, allProjects, allEnvironm
     );
   }
 
+  const canvasBg = isDark ? '#1a1f2e' : '#ffffff';
+  const textColor = isDark ? '#e6e6e6' : '#000000';
+
   return (
     <div className="view-3d-container">
-      <div className="view-3d-legend">
-        <div className="legend-item">
-          <div className="legend-color" style={{ background: '#000000' }}></div>
-          <span>Deployed (version shown)</span>
-        </div>
-        <div className="legend-item">
-          <div className="legend-color" style={{ background: '#D3D3D3' }}></div>
-          <span>Not Deployed</span>
-        </div>
-        <div className="legend-info">
-          💡 Hover over nodes to see details. Drag to rotate, scroll to zoom.
-        </div>
-      </div>
       <Canvas
         camera={{ position: [10, 10, 10], fov: 50 }}
-        style={{ background: '#ffffff' }}
+        style={{ background: canvasBg }}
       >
         <Scene 
           deployments={deployments} 
           allProjects={allProjects}
           allEnvironments={allEnvironments}
           allTenants={allTenants}
+          isDark={isDark}
         />
       </Canvas>
     </div>

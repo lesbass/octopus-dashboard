@@ -64,8 +64,8 @@ export function DeploymentTable({ deployments }: DeploymentTableProps) {
 
     return [...deployments].sort((a, b) => {
       for (const { column, direction } of sortConfigs) {
-        let aValue = a[column];
-        let bValue = b[column];
+        let aValue: string | number = a[column];
+        let bValue: string | number = b[column];
 
         // Handle date comparison
         if (column === 'deployedAt') {
