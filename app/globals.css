@@ -124,6 +124,15 @@ body {
   overflow: hidden;
 }
 
+.sort-hint {
+  padding: 12px 15px;
+  background: #f0f7ff;
+  border-bottom: 1px solid #e3f2fd;
+  color: #1565c0;
+  font-size: 13px;
+  font-weight: 500;
+}
+
 .deployments-table {
   width: 100%;
   border-collapse: collapse;
@@ -142,6 +151,31 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   border-bottom: 2px solid #e0e0e0;
+}
+
+.deployments-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s;
+  position: relative;
+}
+
+.deployments-table th.sortable:hover {
+  background-color: #e8eaf6;
+}
+
+.deployments-table th.sortable:active {
+  background-color: #c5cae9;
+}
+
+.sort-indicator {
+  display: inline-block;
+  margin-left: 8px;
+  color: #2979ff;
+  font-weight: bold;
+  font-size: 16px;
+  line-height: 1;
+  vertical-align: middle;
 }
 
 .deployments-table td {
