@@ -12,6 +12,7 @@ interface Deployment3DViewProps {
   allProjects: Project[];
   allEnvironments: Environment[];
   allTenants: Tenant[];
+  envOrder?: string;
 }
 
 interface NodeData {
@@ -193,26 +194,28 @@ function Scene({
   allProjects, 
   allEnvironments, 
   allTenants,
-  isDark
-}: { 
+  isDark,
+  envOrder
+}: {
   deployments: DeploymentInfo[];
   allProjects: Project[];
   allEnvironments: Environment[];
   allTenants: Tenant[];
   isDark: boolean;
+  envOrder?: string;
 }) {
   const [hoveredDeployment, setHoveredDeployment] = useState<DeploymentInfo | null>(null);
 
   // Use ALL projects, environments, and tenants from the API
   const { projects, environments, tenants } = useMemo(() => {
     // Custom sort order for environments
-    const envOrder = ['Dev', 'QA', 'Demo'];
+    const envOrderArray = (envOrder || '').split(',').map(s => s.trim()).filter(Boolean);
     const sortedEnvironments = allEnvironments
       .map(e => ({ id: e.Id, name: e.Name }))
       .sort((a, b) => {
-        const indexA = envOrder.indexOf(a.name);
-        const indexB = envOrder.indexOf(b.name);
-        
+        const indexA = envOrderArray.indexOf(a.name);
+        const indexB = envOrderArray.indexOf(b.name);
+
         // If both are in the custom order, sort by that
         if (indexA !== -1 && indexB !== -1) return indexA - indexB;
         // If only A is in custom order, it comes first
@@ -228,7 +231,7 @@ function Scene({
       environments: sortedEnvironments,
       tenants: allTenants.map(t => ({ id: t.Id, name: t.Name })).sort((a, b) => a.name.localeCompare(b.name))
     };
-  }, [allProjects, allEnvironments, allTenants]);
+  }, [allProjects, allEnvironments, allTenants, envOrder]);
 
   const spacing = 2; // Space between nodes
 
@@ -471,7 +474,7 @@ function Scene({
   );
 }
 
-export default function Deployment3DView({ deployments, allProjects, allEnvironments, allTenants }: Deployment3DViewProps) {
+export default function Deployment3DView({ deployments, allProjects, allEnvironments, allTenants, envOrder }: Deployment3DViewProps) {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   
@@ -502,6 +505,7 @@ export default function Deployment3DView({ deployments, allProjects, allEnvironm
           allEnvironments={allEnvironments}
           allTenants={allTenants}
           isDark={isDark}
+          envOrder={envOrder}
         />
       </Canvas>
     </div>

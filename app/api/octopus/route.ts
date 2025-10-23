@@ -5,6 +5,7 @@ const octopusConfig = {
   serverUrl: process.env.OCTOPUS_SERVER_URL || '',
   apiKey: process.env.OCTOPUS_API_KEY || '',
   spaceId: process.env.OCTOPUS_SPACE_ID || '',
+  envOrder: process.env.ENV_ORDER || '',
 };
 
 export async function GET(request: NextRequest) {
@@ -43,7 +44,10 @@ export async function GET(request: NextRequest) {
       params,
     });
 
-    return NextResponse.json(response.data);
+    return NextResponse.json({
+      ...response.data,
+      envOrder: octopusConfig.envOrder,
+    });
   } catch (error: any) {
     console.error('Octopus API Error:', error.message);
     return NextResponse.json(

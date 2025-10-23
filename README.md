@@ -64,4 +64,4 @@ Each intersection point shows:
    docker compose up
    ```
 
-3. Open [http://localhost:3000](http://localhost:3000)
+3. Open [http://localhost:3005](http://localhost:3005)

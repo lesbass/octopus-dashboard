@@ -69,4 +69,5 @@ export interface CompleteDeploymentData {
   allProjects: Project[];
   allEnvironments: Environment[];
   allTenants: Tenant[];
+  envOrder?: string;
 }

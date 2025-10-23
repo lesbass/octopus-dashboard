@@ -105,11 +105,15 @@ export class OctopusService {
         state: item.State,
       }));
 
+    // Extract envOrder from the response (added by our API route)
+    const envOrder = (dashboard as any).envOrder as string | undefined;
+
     return {
       deployments,
       allProjects,
       allEnvironments,
-      allTenants
+      allTenants,
+      envOrder
     };
   }
 }

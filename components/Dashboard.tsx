@@ -44,6 +44,7 @@ export default function Dashboard() {
   const allProjects = data?.allProjects || [];
   const allEnvironments = data?.allEnvironments || [];
   const allTenants = data?.allTenants || [];
+  const envOrder = data?.envOrder || '';
 
   // Check if any filters are active
   const hasActiveFilters = filteredDeployments.length !== deployments.length;
@@ -137,6 +138,7 @@ export default function Dashboard() {
           allProjects={allProjects}
           allEnvironments={allEnvironments}
           allTenants={allTenants}
+          envOrder={envOrder}
         />
       )}
     </div>
