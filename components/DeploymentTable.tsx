@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import type { DeploymentInfo } from '@/lib/types/octopus';
+import { VersionBadge } from './VersionBadge';
 
 interface DeploymentTableProps {
   deployments: DeploymentInfo[];
@@ -141,7 +142,7 @@ export function DeploymentTable({ deployments }: DeploymentTableProps) {
               <td>{deployment.environmentName}</td>
               <td>{deployment.tenantName}</td>
               <td>
-                <span className="version-badge">{deployment.version}</span>
+                <VersionBadge version={deployment.version} />
               </td>
               <td className="date-time">{formatDate(deployment.deployedAt)}</td>
             </tr>

@@ -264,14 +264,29 @@ body {
   background-color: var(--bg-hover);
 }
 
-.version-badge {
+.version-main {
   display: inline-block;
-  background: var(--accent-bg);
-  color: var(--accent-secondary);
-  padding: 4px 12px;
-  border-radius: 12px;
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.version-build {
+  display: inline-block;
+  color: var(--text-muted);
+  font-weight: 500;
+  font-size: 13px;
+  margin-left: 2px;
+}
+
+.version-text {
+  display: inline-block;
   font-weight: 600;
   font-size: 13px;
+  color: var(--text-primary);
 }
 
 .date-time {
