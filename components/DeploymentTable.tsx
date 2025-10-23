@@ -142,7 +142,7 @@ export function DeploymentTable({ deployments }: DeploymentTableProps) {
               <td>{deployment.environmentName}</td>
               <td>{deployment.tenantName}</td>
               <td>
-                <VersionBadge version={deployment.version} />
+                <VersionBadge version={deployment.version} state={deployment.state} />
               </td>
               <td className="date-time">{formatDate(deployment.deployedAt)}</td>
             </tr>

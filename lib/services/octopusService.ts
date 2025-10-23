@@ -62,7 +62,7 @@ export class OctopusService {
     const tenantMap = new Map(dashboard.Tenants.map(t => [t.Id, t.Name]));
 
     const deployments: DeploymentInfo[] = dashboard.Items
-      .filter(item => item.State === 'Success' && item.TenantId)
+      .filter(item => item.TenantId)
       .map(item => ({
         projectName: projectMap.get(item.ProjectId) || 'Unknown',
         projectId: item.ProjectId,
@@ -72,6 +72,7 @@ export class OctopusService {
         tenantId: item.TenantId!,
         version: item.ReleaseVersion,
         deployedAt: item.CompletedTime || '',
+        state: item.State,
       }));
 
     return deployments;
@@ -91,7 +92,7 @@ export class OctopusService {
     const tenantMap = new Map(dashboard.Tenants.map(t => [t.Id, t.Name]));
 
     const deployments: DeploymentInfo[] = dashboard.Items
-      .filter(item => item.State === 'Success' && item.TenantId)
+      .filter(item => item.TenantId)
       .map(item => ({
         projectName: projectMap.get(item.ProjectId) || 'Unknown',
         projectId: item.ProjectId,
@@ -101,6 +102,7 @@ export class OctopusService {
         tenantId: item.TenantId!,
         version: item.ReleaseVersion,
         deployedAt: item.CompletedTime || '',
+        state: item.State,
       }));
 
     return {

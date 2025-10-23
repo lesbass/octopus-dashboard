@@ -44,6 +44,7 @@ export interface DeploymentInfo {
   tenantId: string;
   version: string;
   deployedAt: string;
+  state: string;
 }
 
 export interface DashboardResource {

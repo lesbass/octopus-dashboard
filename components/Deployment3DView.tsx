@@ -44,29 +44,43 @@ function DeploymentNode({
   const meshRef = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = useState(false);
 
+  const hasDeployment = deployment !== null;
+  const isInProgress = hasDeployment && (deployment.state === 'Executing' || deployment.state === 'Queued');
+  const isFailed = hasDeployment && deployment.state === 'Failed';
+  const isSuccess = hasDeployment && deployment.state === 'Success';
+
   useFrame(() => {
-    if (meshRef.current && !deployment) {
-      meshRef.current.rotation.x += 0.01;
-      meshRef.current.rotation.y += 0.01;
+    if (meshRef.current) {
+      if (!hasDeployment || isInProgress) {
+        // Rotate for empty nodes or in-progress deployments
+        meshRef.current.rotation.x += 0.01;
+        meshRef.current.rotation.y += 0.01;
+      }
     }
   });
 
-  const hasDeployment = deployment !== null;
   const textColor = isDark ? '#e6e6e6' : '#000000';
   const tooltipBg = isDark ? 'rgba(26, 31, 46, 0.95)' : 'rgba(0, 0, 0, 0.9)';
   const emptyTooltipBg = isDark ? 'rgba(42, 50, 68, 0.95)' : 'rgba(128, 128, 128, 0.9)';
   
   // Safely get version, handle empty or invalid versions
   const versionText = hasDeployment && deployment.version ? deployment.version : 'N/A';
+  
+  // Determine color based on state
+  const getVersionColor = () => {
+    if (isInProgress) return '#ff9800'; // Orange
+    if (isFailed) return '#ff6b6b'; // Red
+    return textColor; // Normal color for success
+  };
 
   return (
     <group position={position}>
       {hasDeployment ? (
-        // Show version number as text for deployed versions
+        // Show version number as text for all deployments with color based on state
         <>
           <Text
             fontSize={0.15}
-            color={textColor}
+            color={getVersionColor()}
             anchorX="center"
             anchorY="middle"
             fontWeight="bold"
@@ -97,8 +111,17 @@ function DeploymentNode({
                 <div><strong>Environment:</strong> {deployment.environmentName}</div>
                 <div><strong>Tenant:</strong> {deployment.tenantName}</div>
                 <div><strong>Version:</strong> {versionText}</div>
+                <div>
+                  <strong>Status:</strong>{' '}
+                  <span style={{
+                    color: isInProgress ? '#ff9800' : isFailed ? '#ff6b6b' : '#4caf50',
+                    fontWeight: 'bold'
+                  }}>
+                    {deployment.state}
+                  </span>
+                </div>
                 <div style={{ fontSize: '10px', marginTop: '5px', color: '#aaa' }}>
-                  {new Date(deployment.deployedAt).toLocaleString()}
+                  {deployment.deployedAt ? new Date(deployment.deployedAt).toLocaleString() : 'In progress...'}
                 </div>
               </div>
             </Html>

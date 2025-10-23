@@ -272,6 +272,17 @@ body {
   border-radius: 4px;
   font-weight: 700;
   font-size: 13px;
+  position: relative;
+}
+
+.version-main.version-in-progress {
+  background: #ff9800;
+  color: white;
+}
+
+.version-main.version-failed {
+  background: var(--error-border);
+  color: white;
 }
 
 .version-build {
@@ -287,6 +298,38 @@ body {
   font-weight: 600;
   font-size: 13px;
   color: var(--text-primary);
+  position: relative;
+}
+
+.version-text.version-in-progress {
+  color: #ff9800;
+  font-weight: 700;
+}
+
+.version-text.version-failed {
+  color: var(--error-text);
+  font-weight: 700;
+}
+
+.version-loader {
+  display: inline-block;
+  margin-left: 6px;
+  animation: spin 1s linear infinite;
+  font-size: 14px;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.version-wrapper {
+  display: inline-flex;
+  align-items: center;
 }
 
 .date-time {
