@@ -45,6 +45,7 @@ export default function Dashboard() {
   const allEnvironments = data?.allEnvironments || [];
   const allTenants = data?.allTenants || [];
   const envOrder = data?.envOrder || '';
+  const infeasibleCombinations = data?.infeasibleCombinations;
 
   // Check if any filters are active
   const hasActiveFilters = filteredDeployments.length !== deployments.length;
@@ -139,6 +140,7 @@ export default function Dashboard() {
           allEnvironments={allEnvironments}
           allTenants={allTenants}
           envOrder={envOrder}
+          infeasibleCombinations={infeasibleCombinations}
         />
       )}
     </div>

@@ -13,6 +13,7 @@ interface Deployment3DViewProps {
   allEnvironments: Environment[];
   allTenants: Tenant[];
   envOrder?: string;
+  infeasibleCombinations?: Set<string>;
 }
 
 interface NodeData {
@@ -28,6 +29,7 @@ interface DeploymentNode {
   projectId: string;
   environmentId: string;
   tenantId: string;
+  isInfeasible: boolean; // true if this env-tenant combo has no deployment targets
 }
 
 // Component for individual deployment nodes at cube intersections
@@ -35,12 +37,14 @@ function DeploymentNode({
   position, 
   deployment, 
   onHover,
-  isDark
+  isDark,
+  isInfeasible
 }: { 
   position: [number, number, number]; 
   deployment: DeploymentInfo | null;
   onHover: (deployment: DeploymentInfo | null) => void;
   isDark: boolean;
+  isInfeasible: boolean;
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = useState(false);
@@ -63,6 +67,7 @@ function DeploymentNode({
   const textColor = isDark ? '#e6e6e6' : '#000000';
   const tooltipBg = isDark ? 'rgba(26, 31, 46, 0.95)' : 'rgba(0, 0, 0, 0.9)';
   const emptyTooltipBg = isDark ? 'rgba(42, 50, 68, 0.95)' : 'rgba(128, 128, 128, 0.9)';
+  const infeasibleTooltipBg = isDark ? 'rgba(60, 40, 40, 0.95)' : 'rgba(80, 60, 60, 0.9)';
   
   // Safely get version, handle empty or invalid versions
   const versionText = hasDeployment && deployment.version ? deployment.version : 'N/A';
@@ -73,6 +78,51 @@ function DeploymentNode({
     if (isFailed) return '#ff6b6b'; // Red
     return textColor; // Normal color for success
   };
+
+  // If this combination is infeasible, show a hollow/transparent dot
+  if (isInfeasible) {
+    return (
+      <group position={position}>
+        <mesh
+          ref={meshRef}
+          onPointerOver={() => {
+            setHovered(true);
+            onHover(deployment);
+          }}
+          onPointerOut={() => {
+            setHovered(false);
+            onHover(null);
+          }}
+        >
+          <sphereGeometry args={[0.06, 4, 4]} />
+          <meshStandardMaterial 
+            color="#666666"
+            transparent
+            opacity={hovered ? 0.5 : 0.25}
+            wireframe={true}
+            metalness={0.1}
+            roughness={0.8}
+          />
+        </mesh>
+        {hovered && (
+          <Html distanceFactor={10}>
+            <div style={{
+              background: infeasibleTooltipBg,
+              color: '#cccccc',
+              padding: '8px',
+              borderRadius: '4px',
+              fontSize: '11px',
+              whiteSpace: 'nowrap',
+              pointerEvents: 'none',
+              border: '1px dashed #666'
+            }}>
+              ⚠️ No deployment targets for this combination
+            </div>
+          </Html>
+        )}
+      </group>
+    );
+  }
 
   return (
     <group position={position}>
@@ -144,8 +194,8 @@ function DeploymentNode({
           >
             <boxGeometry args={[0.08, 0.08, 0.08]} />
             <meshStandardMaterial 
-              color="#D3D3D3"
-              emissive="#D3D3D3"
+              color="#fdfda7"
+              emissive="#fdfda7"
               emissiveIntensity={hovered ? 0.5 : 0.2}
               metalness={0.5}
               roughness={0.3}
@@ -195,7 +245,8 @@ function Scene({
   allEnvironments, 
   allTenants,
   isDark,
-  envOrder
+  envOrder,
+  infeasibleCombinations
 }: {
   deployments: DeploymentInfo[];
   allProjects: Project[];
@@ -203,6 +254,7 @@ function Scene({
   allTenants: Tenant[];
   isDark: boolean;
   envOrder?: string;
+  infeasibleCombinations?: Set<string>;
 }) {
   const [hoveredDeployment, setHoveredDeployment] = useState<DeploymentInfo | null>(null);
 
@@ -255,6 +307,10 @@ function Scene({
           const key = `${project.id}-${env.id}-${tenant.id}`;
           const deployment = deploymentMap.get(key) || null;
           
+          // Check if this env-tenant combination is infeasible (no deployment targets)
+          const envTenantKey = `${env.id}-${tenant.id}`;
+          const isInfeasible = infeasibleCombinations?.has(envTenantKey) || false;
+          
           nodes.push({
             position: [
               pIdx * spacing - (projects.length - 1) * spacing / 2,
@@ -264,14 +320,15 @@ function Scene({
             deployment,
             projectId: project.id,
             environmentId: env.id,
-            tenantId: tenant.id
+            tenantId: tenant.id,
+            isInfeasible
           });
         });
       });
     });
     
     return nodes;
-  }, [projects, environments, tenants, deploymentMap, spacing]);
+  }, [projects, environments, tenants, deploymentMap, spacing, infeasibleCombinations]);
 
   // Generate grid lines for better visualization
   const gridLines = useMemo(() => {
@@ -427,6 +484,7 @@ function Scene({
           deployment={node.deployment}
           onHover={setHoveredDeployment}
           isDark={isDark}
+          isInfeasible={node.isInfeasible}
         />
       ))}
 
@@ -474,7 +532,7 @@ function Scene({
   );
 }
 
-export default function Deployment3DView({ deployments, allProjects, allEnvironments, allTenants, envOrder }: Deployment3DViewProps) {
+export default function Deployment3DView({ deployments, allProjects, allEnvironments, allTenants, envOrder, infeasibleCombinations }: Deployment3DViewProps) {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   
@@ -506,6 +564,7 @@ export default function Deployment3DView({ deployments, allProjects, allEnvironm
           allTenants={allTenants}
           isDark={isDark}
           envOrder={envOrder}
+          infeasibleCombinations={infeasibleCombinations}
         />
       </Canvas>
     </div>

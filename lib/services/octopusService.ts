@@ -6,6 +6,7 @@ import type {
   DashboardResponse,
   DeploymentInfo,
   CompleteDeploymentData,
+  DeploymentTarget,
 } from '../types/octopus';
 
 interface PaginatedResponse<T> {
@@ -47,6 +48,22 @@ export class OctopusService {
     return response.Items;
   }
 
+  async getDeploymentTargets(): Promise<DeploymentTarget[]> {
+    try {
+      // Try the standard machines endpoint first
+      const response = await this.client.get<PaginatedResponse<DeploymentTarget>>(
+        `/api/${this.spaceId}/machines`,
+        { take: 1000 }
+      );
+      return response.Items;
+    } catch (error) {
+      // If we get a 403 or any error, return empty array
+      // This means we can't determine infeasible combinations, but the app will still work
+      console.warn('Unable to fetch deployment targets:', error);
+      return [];
+    }
+  }
+
   async getDashboard(): Promise<DashboardResponse> {
     const dashboard = await this.client.get<DashboardResponse>(
       `/api/${this.spaceId}/dashboard`
@@ -80,11 +97,12 @@ export class OctopusService {
 
   async getCompleteDeploymentData(): Promise<CompleteDeploymentData> {
     // Fetch all data in parallel
-    const [dashboard, allProjects, allEnvironments, allTenants] = await Promise.all([
+    const [dashboard, allProjects, allEnvironments, allTenants, deploymentTargets] = await Promise.all([
       this.getDashboard(),
       this.getProjects(),
       this.getEnvironments(),
-      this.getTenants()
+      this.getTenants(),
+      this.getDeploymentTargets()
     ]);
     
     const projectMap = new Map(dashboard.Projects.map(p => [p.Id, p.Name]));
@@ -108,12 +126,49 @@ export class OctopusService {
     // Extract envOrder from the response (added by our API route)
     const envOrder = (dashboard as any).envOrder as string | undefined;
 
+    // Build a set of feasible environment-tenant combinations based on deployment targets
+    const feasibleCombinations = new Set<string>();
+    
+    // Only process if we successfully fetched deployment targets
+    if (deploymentTargets.length > 0) {
+      deploymentTargets.forEach(target => {
+        // Only consider tenanted or tenanted-or-untenanted machines
+        if (target.TenantedDeploymentParticipation === 'Tenanted' || 
+            target.TenantedDeploymentParticipation === 'TenantedOrUntenanted') {
+          
+          // For each environment this target is in
+          target.EnvironmentIds.forEach(envId => {
+            // For each tenant this target supports
+            target.TenantIds.forEach(tenantId => {
+              feasibleCombinations.add(`${envId}-${tenantId}`);
+            });
+          });
+        }
+      });
+    }
+
+    // Determine infeasible combinations: all env-tenant pairs that aren't in feasibleCombinations
+    // Only calculate this if we have deployment targets data
+    const infeasibleCombinations = new Set<string>();
+    
+    if (deploymentTargets.length > 0) {
+      allEnvironments.forEach(env => {
+        allTenants.forEach(tenant => {
+          const key = `${env.Id}-${tenant.Id}`;
+          if (!feasibleCombinations.has(key)) {
+            infeasibleCombinations.add(key);
+          }
+        });
+      });
+    }
+
     return {
       deployments,
       allProjects,
       allEnvironments,
       allTenants,
-      envOrder
+      envOrder,
+      infeasibleCombinations
     };
   }
 }

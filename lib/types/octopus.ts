@@ -64,10 +64,19 @@ export interface DashboardResponse {
   Tenants: Tenant[];
 }
 
+export interface DeploymentTarget {
+  Id: string;
+  Name: string;
+  EnvironmentIds: string[];
+  TenantIds: string[];
+  TenantedDeploymentParticipation: 'Untenanted' | 'Tenanted' | 'TenantedOrUntenanted';
+}
+
 export interface CompleteDeploymentData {
   deployments: DeploymentInfo[];
   allProjects: Project[];
   allEnvironments: Environment[];
   allTenants: Tenant[];
   envOrder?: string;
+  infeasibleCombinations?: Set<string>; // Set of "environmentId-tenantId" keys
 }
