@@ -41,6 +41,7 @@ Each intersection point shows:
    OCTOPUS_SERVER_URL=https://your-octopus-server.com
    OCTOPUS_API_KEY=API-XXXXXXXXXXXXXXXXXXXXXXXXXX
    OCTOPUS_SPACE_ID=Spaces-1
+   ENV_ORDER=Development,Staging,Production
    ```
 
 3. Run the development server:
@@ -57,6 +58,7 @@ Each intersection point shows:
    OCTOPUS_SERVER_URL=https://your-octopus-server.com
    OCTOPUS_API_KEY=API-XXXXXXXXXXXXXXXXXXXXXXXXXX
    OCTOPUS_SPACE_ID=Spaces-1
+   ENV_ORDER=Development,Staging,Production
    ```
 
 2. Start the container:

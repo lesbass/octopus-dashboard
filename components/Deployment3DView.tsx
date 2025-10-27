@@ -1,8 +1,8 @@
 'use client';
 
-import { useRef, useMemo, useState } from 'react';
+import { useRef, useMemo, useState, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Text, Line, Html } from '@react-three/drei';
+import { OrbitControls, Text, Line, Html, useProgress } from '@react-three/drei';
 import * as THREE from 'three';
 import { useTheme } from './ThemeProvider';
 import type { DeploymentInfo, Project, Environment, Tenant } from '@/lib/types/octopus';
@@ -14,13 +14,6 @@ interface Deployment3DViewProps {
   allTenants: Tenant[];
   envOrder?: string;
   infeasibleCombinations?: Set<string>;
-}
-
-interface NodeData {
-  position: [number, number, number];
-  label: string;
-  type: 'project' | 'environment' | 'tenant';
-  id: string;
 }
 
 interface DeploymentNode {
@@ -256,6 +249,15 @@ function Scene({
   envOrder?: string;
   infeasibleCombinations?: Set<string>;
 }) {
+  console.log('Rendering 3D Scene with deployments:', { 
+  deployments, 
+  allProjects, 
+  allEnvironments, 
+  allTenants,
+  isDark,
+  envOrder,
+  infeasibleCombinations
+});
   const [hoveredDeployment, setHoveredDeployment] = useState<DeploymentInfo | null>(null);
 
   // Use ALL projects, environments, and tenants from the API
@@ -532,6 +534,33 @@ function Scene({
   );
 }
 
+// Loading component that shows progress
+function Loader() {
+  const { progress } = useProgress();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  
+  return (
+    <Html center>
+      <div style={{
+        color: isDark ? '#e6e6e6' : '#000000',
+        fontSize: '14px',
+        fontWeight: 'bold',
+        textAlign: 'center',
+        padding: '20px',
+        background: isDark ? 'rgba(26, 31, 46, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+        borderRadius: '8px',
+        border: `1px solid ${isDark ? '#444' : '#ddd'}`
+      }}>
+        <div>Loading 3D visualization...</div>
+        <div style={{ fontSize: '12px', marginTop: '8px', color: isDark ? '#aaa' : '#666' }}>
+          {progress.toFixed(0)}%
+        </div>
+      </div>
+    </Html>
+  );
+}
+
 export default function Deployment3DView({ deployments, allProjects, allEnvironments, allTenants, envOrder, infeasibleCombinations }: Deployment3DViewProps) {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
@@ -549,7 +578,6 @@ export default function Deployment3DView({ deployments, allProjects, allEnvironm
   }
 
   const canvasBg = isDark ? '#1a1f2e' : '#ffffff';
-  const textColor = isDark ? '#e6e6e6' : '#000000';
 
   return (
     <div className="view-3d-container">
@@ -557,15 +585,17 @@ export default function Deployment3DView({ deployments, allProjects, allEnvironm
         camera={{ position: [10, 10, 10], fov: 50 }}
         style={{ background: canvasBg }}
       >
-        <Scene 
-          deployments={deployments} 
-          allProjects={allProjects}
-          allEnvironments={allEnvironments}
-          allTenants={allTenants}
-          isDark={isDark}
-          envOrder={envOrder}
-          infeasibleCombinations={infeasibleCombinations}
-        />
+        <Suspense fallback={<Loader />}>
+          <Scene 
+            deployments={deployments} 
+            allProjects={allProjects}
+            allEnvironments={allEnvironments}
+            allTenants={allTenants}
+            isDark={isDark}
+            envOrder={envOrder}
+            infeasibleCombinations={infeasibleCombinations}
+          />
+        </Suspense>
       </Canvas>
     </div>
   );
