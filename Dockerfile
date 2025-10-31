@@ -20,6 +20,13 @@ RUN npm run build
 FROM node:22-alpine AS runner
 WORKDIR /app
 
+# Add labels for GitHub repository linking
+LABEL org.opencontainers.image.source="https://github.com/lesbass/octopus-dashboard"
+LABEL org.opencontainers.image.description="Octopus Deploy Dashboard - A modern dashboard for monitoring Octopus Deploy deployments"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.url="https://github.com/lesbass/octopus-dashboard"
+LABEL org.opencontainers.image.documentation="https://github.com/lesbass/octopus-dashboard#readme"
+
 ENV NODE_ENV=production
 
 RUN addgroup --system --gid 1001 nodejs
